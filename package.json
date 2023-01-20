@@ -4,7 +4,7 @@
   "description": "Chinese Lunar Calendar (Luminous Calendar) and Western Yuan Gregorian Calendar Interconversion JavaScript/TypeScript Library, forked from jjonline/calendar.js",
   "main": "calendar.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest"
   },
   "repository": {
     "type": "git",
@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/Thungghuan/calendar.js#readme",
   "devDependencies": {
-    "typescript": "^4.9.4"
+    "typescript": "^4.9.4",
+    "vitest": "^0.27.2"
   }
 }

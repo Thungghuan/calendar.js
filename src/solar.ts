@@ -26,7 +26,7 @@ export function solarDays(sYear: number, sMonth: number) {
  * @param sYear solar year(1900-2100)
  * @param n n二十四节气中的第几个节气(1~24)，从n=1(小寒)算起
  * @return day Number
- * @eg `let _24 = calendar.getTerm(1987,3) // _24=4, 意即1987年2月4日立春`
+ * @eg `let _24 = getTerm(1987,3) // _24=4, 意即1987年2月4日立春`
  */
 export function getTerm(sYear: number, n: number) {
   if (sYear < 1900 || sYear > 2100 || n < 1 || n > 24) {
@@ -35,8 +35,13 @@ export function getTerm(sYear: number, n: number) {
   const _table = sTermInfo[sYear - 1900]
   const _calcDay = []
   for (let index = 0; index < _table.length; index += 5) {
-    const chunk = parseInt('0x' + _table.substr(index, 5)).toString()
-    _calcDay.push(chunk[0], chunk.substr(1, 2), chunk[3], chunk.substr(4, 2))
+    const chunk = parseInt('0x' + _table.substring(index, index + 5)).toString()
+    _calcDay.push(
+      chunk[0],
+      chunk.substring(1, 3),
+      chunk[3],
+      chunk.substring(4, 6)
+    )
   }
   return parseInt(_calcDay[n - 1])
 }
@@ -45,7 +50,7 @@ export function getTerm(sYear: number, n: number) {
  * 年份转生肖[!仅能大致转换] => 精确划分生肖分界线是“立春”
  * @param sYear solar year
  * @return Cn string
- * @eg `let animal = calendar.getAnimal(1987) // '兔'`
+ * @eg `let animal = getAnimal(1987) // '兔'`
  */
 export function getAnimal(sYear: number) {
   return animals[(sYear - 4) % 12]

@@ -95,7 +95,7 @@ export function toChinaMonth(lMonth: number) {
  * @return Cn string
  */
 export function toChinaDay(lDay: number) {
-  // 若参数错误，返回-1
+  // 若参数错误，返回空串
   if (lDay < 1 || lDay > 30) {
     return -1
   }

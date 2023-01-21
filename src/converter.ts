@@ -11,6 +11,47 @@ import {
 } from './lunar'
 import { getTerm, getAnimal } from './solar'
 
+interface ConvertResult {
+  // festival: festival[festivalDate] ? festival[festivalDate].title : null,
+  // lunarFestival: lFestival[lunarFestivalDate]
+  //   ? lFestival[lunarFestivalDate].title
+  //   : null,
+  solarDate: string
+  sYear: number
+  sMonth: number
+  sDay: number
+
+  lunarDate: string
+  lYear: number
+  lMonth: number
+  lDay: number
+
+  weekday: number
+  weekdayCn: string
+
+  gzYear: string
+  gzMonth: string
+  gzDay: string
+  animal: string
+
+  monthCn: string
+  dayCn: string
+
+  isToday: boolean
+  isLeap: boolean
+
+  isTerm: boolean
+  term: string | null
+  // astro: astro
+}
+
+function formatDateString(year: number, month: number, date: number) {
+  const formatMonth = (month > 9 ? '' : '0') + month
+  const formatDate = (date > 9 ? '' : '0') + date
+
+  return `${year}-${formatMonth}-${formatDate}`
+}
+
 /**
  * 传入阳历年月日获得详细的公历、农历object信息
  * !important! 公历参数区间1900.1.31~2100.12.31
@@ -20,74 +61,117 @@ import { getTerm, getAnimal } from './solar'
  * @return JSON object
  * @eg `console.log(solar2lunar(1987,11,01))`
  */
-export function solar2lunar(sYear: number, sMonth: number, sDay: number) {
-  // 年份限定、上限
-  if (sYear < 1900 || sYear > 2100) {
-    return -1 // undefined转换为数字变为NaN
-  }
-  // 公历传参最下限
-  if (sYear === 1900 && sMonth === 1 && sDay < 31) {
-    return -1
+export function solar2lunar(): ConvertResult
+export function solar2lunar(
+  sYear: number,
+  sMonth: number,
+  sDay: number
+): ConvertResult
+
+export function solar2lunar(
+  sYear?: number,
+  sMonth?: number,
+  sDay?: number
+): ConvertResult {
+  let objDate
+
+  if (sYear && sMonth && sDay) {
+    // 年份限定、上限
+    if (sYear < 1900 || sYear > 2100) {
+      throw new Error(
+        `The solar date to be converted ${formatDateString(
+          sYear,
+          sMonth,
+          sDay
+        )} is out of range, [1900.01.31~2100.12.31] only.`
+      )
+    }
+    // 公历传参最下限
+    if (sYear === 1900 && sMonth === 1 && sDay < 31) {
+      throw new Error(
+        `The solar date to be converted ${formatDateString(
+          sYear,
+          sMonth,
+          sDay
+        )} is out of range, [1900.01.31~2100.12.31] only.`
+      )
+    }
+
+    objDate = new Date(sYear, sMonth! - 1, sDay)
+  } else {
+    // 未传参，获得当天
+    objDate = new Date()
   }
 
-  // 未传参  获得当天
-  let objDate
-  if (!sYear) {
-    objDate = new Date()
-  } else {
-    objDate = new Date(sYear, sMonth - 1, sDay)
-  }
-  let i,
-    leap = 0,
-    temp = 0
-  //修正ymd参数
+  // let i,
+  //   leap = 0,
+  //   temp = 0
+
+  // 修正ymd参数
   sYear = objDate.getFullYear()
   sMonth = objDate.getMonth() + 1
   sDay = objDate.getDate()
+
+  // 计算当天距离1900年春节（1900年1月31日）的天数
   let offset =
-    (Date.UTC(objDate.getFullYear(), objDate.getMonth(), objDate.getDate()) -
-      Date.UTC(1900, 0, 31)) /
-    86400000
-  for (i = 1900; i < 2101 && offset > 0; i++) {
-    temp = lYearDays(i)
-    offset -= temp
-  }
-  if (offset < 0) {
-    offset += temp
-    i--
+    (Date.UTC(sYear, sMonth - 1, sDay) - Date.UTC(1900, 0, 31)) /
+    (24 * 3600 * 1000)
+
+  // let i = 0
+  // let temp = 0
+  // for (i = 1900; i < 2101 && offset > 0; i++) {
+  //   temp = lYearDays(i)
+  //   offset -= temp
+  // }
+  // if (offset < 0) {
+  //   offset += temp
+  //   i--
+  // }
+
+  let offsetYear = 1900
+  let offsetYearDays = lYearDays(1900)
+  while (offset - offsetYearDays >= 0) {
+    offset -= offsetYearDays
+    offsetYear++
+    offsetYearDays = lYearDays(offsetYear)
   }
 
-  //是否今天
-  let isTodayObj = new Date(),
+  // 是否今天
+  let today = new Date(),
     isToday = false
   if (
-    isTodayObj.getFullYear() === sYear &&
-    isTodayObj.getMonth() + 1 === sMonth &&
-    isTodayObj.getDate() === sDay
+    today.getFullYear() === sYear &&
+    today.getMonth() + 1 === sMonth &&
+    today.getDate() === sDay
   ) {
     isToday = true
   }
-  //星期几
-  let nWeek = objDate.getDay(),
-    cWeek = nStr1[nWeek]
-  //数字表示周几顺应天朝周一开始的惯例
-  if (nWeek === 0) {
-    nWeek = 7
+
+  // 星期几
+  let weekday = objDate.getDay()
+  const weekdayCn = '\u661f\u671f' + nStr1[weekday]
+
+  // 数字表示周几顺应天朝周一开始的惯例
+  if (weekday === 0) {
+    weekday = 7
   }
-  //农历年
-  const year = i
-  leap = leapMonth(i) //闰哪个月
+
+  // 农历年
+  const lYear = offsetYear
+  const leap = leapMonth(lYear) // 闰哪个月
   let isLeap = false
 
-  //效验闰月
+  // 效验闰月
+  let i,
+    temp = 0
   for (i = 1; i < 13 && offset > 0; i++) {
-    //闰月
+    // 闰月
     if (leap > 0 && i === leap + 1 && isLeap === false) {
       --i
       isLeap = true
-      temp = leapDays(year) //计算农历闰月天数
+      temp = leapDays(lYear) //计算农历闰月天数
     } else {
-      temp = monthDays(year, i) //计算农历普通月天数
+      temp = monthDays(lYear, i) //计算农历普通月天数
     }
     //解除闰月
     if (isLeap === true && i === leap + 1) {
@@ -108,84 +192,98 @@ export function solar2lunar(sYear: number, sMonth: number, sDay: number) {
     offset += temp
     --i
   }
-  //农历月
-  const month = i
-  //农历日
-  const day = offset + 1
-  //天干地支处理
-  const sm = sMonth - 1
-  const gzY = toGanZhiYear(year)
+
+  // 农历月
+  const lMonth = i
+  // 农历日
+  const lDay = offset + 1
+  // 天干地支处理
+  const gzYear = toGanZhiYear(lYear)
+  // 生肖
+  const animal = getAnimal(lYear)
+
+  const monthCn = (isLeap ? '\u95f0' : '') + toChinaMonth(lMonth)
+  const dayCn = toChinaDay(lDay) as string
 
   // 当月的两个节气
   // bugfix-2017-7-24 11:03:38 use lunar Year Param `y` Not `year`
-  const firstNode = getTerm(sYear, sMonth * 2 - 1) //返回当月「节」为几日开始
-  const secondNode = getTerm(sYear, sMonth * 2) //返回当月「节」为几日开始
+  const firstNode = getTerm(sYear, sMonth * 2 - 1) // 返回当月第一个节气日期
+  const secondNode = getTerm(sYear, sMonth * 2) // 返回当月第二个节气日期
 
   // 依据12节气修正干支月
-  let gzM = toGanZhi((sYear - 1900) * 12 + sMonth + 11)
-  if (sDay >= firstNode) {
-    gzM = toGanZhi((sYear - 1900) * 12 + sMonth + 12)
-  }
+  const gzMonth = toGanZhi(
+    (sYear - 1900) * 12 + sMonth + (sDay >= firstNode ? 12 : 11)
+  )
 
-  //传入的日期的节气与否
+  // 传入的日期的节气与否
   let isTerm = false
-  let Term = null
+  let term = null
   if (firstNode === sDay) {
     isTerm = true
-    Term = solarTerm[sMonth * 2 - 2]
-  }
-  if (secondNode === sDay) {
+    term = solarTerm[sMonth * 2 - 2]
+  } else if (secondNode === sDay) {
     isTerm = true
-    Term = solarTerm[sMonth * 2 - 1]
+    term = solarTerm[sMonth * 2 - 1]
   }
-  //日柱 当月一日与 1900/1/1 相差天数
-  const dayCyclical = Date.UTC(sYear, sm, 1, 0, 0, 0, 0) / 86400000 + 25567 + 10
-  const gzD = toGanZhi(dayCyclical + sDay - 1)
-  //该日期所属的星座
+
+  // 日柱 当月一日与1900年1月1日相差的天数
+  // 1900年1月1日为干支甲戌日，offset为10
+  const dayCyclical =
+    (Date.UTC(sYear, sMonth - 1, 1) - Date.UTC(1900, 0, 1)) / 86400000 + 10
+  const gzDay = toGanZhi(dayCyclical + sDay - 1)
+
+  // 该日期所属的星座
   // const astro = toAstro(m, d)
 
-  const solarDate = sYear + '-' + sMonth + '-' + sDay
-  const lunarDate = year + '-' + month + '-' + day
+  const solarDate = formatDateString(sYear, sMonth, sDay)
+  const lunarDate = formatDateString(lYear, lMonth, lDay)
 
   // const festival = festival
   // const lFestival = lFestival
 
   const festivalDate = sMonth + '-' + sDay
-  let lunarFestivalDate = month + '-' + day
+  let lunarFestivalDate = lMonth + '-' + lDay
 
   // bugfix https://github.com/jjonline/calendar.js/issues/29
   // 农历节日修正：农历12月小月则29号除夕，大月则30号除夕
   // 此处取巧修正：当前为农历12月29号时增加一次判断并且把lunarFestivalDate设置为12-30以正确取得除夕
   // 天朝农历节日遇闰月过前不过后的原则，此处取农历12月天数不考虑闰月
   // 农历润12月在本工具支持的200年区间内仅1574年出现
-  if (month === 12 && day === 29 && monthDays(year, month) === 29) {
+  if (lMonth === 12 && lDay === 29 && monthDays(lYear, lMonth) === 29) {
     lunarFestivalDate = '12-30'
   }
+
   return {
-    date: solarDate,
-    lunarDate: lunarDate,
     // festival: festival[festivalDate] ? festival[festivalDate].title : null,
     // lunarFestival: lFestival[lunarFestivalDate]
     //   ? lFestival[lunarFestivalDate].title
     //   : null,
-    lYear: year,
-    lMonth: month,
-    lDay: day,
-    Animal: getAnimal(year),
-    IMonthCn: (isLeap ? '\u95f0' : '') + toChinaMonth(month),
-    IDayCn: toChinaDay(day),
-    cYear: sYear,
-    cMonth: sMonth,
-    cDay: sDay,
-    gzYear: gzY,
-    gzMonth: gzM,
-    gzDay: gzD,
-    isToday: isToday,
-    isLeap: isLeap,
-    nWeek: nWeek,
-    ncWeek: '\u661f\u671f' + cWeek,
-    isTerm: isTerm,
-    Term: Term
+    solarDate,
+    sYear,
+    sMonth,
+    sDay,
+
+    lunarDate,
+    lYear,
+    lMonth,
+    lDay,
+
+    weekday,
+    weekdayCn,
+
+    gzYear,
+    gzMonth,
+    gzDay,
+    animal,
+
+    monthCn,
+    dayCn,
+
+    isToday,
+    isLeap,
+
+    isTerm,
+    term
     // astro: astro
   }
 }

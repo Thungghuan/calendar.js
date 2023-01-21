@@ -5,7 +5,6 @@ import { animals, solarMonth, sTermInfo } from './constant'
  * @param sYear solar Year
  * @param sMonth solar Month
  * @return Number (-1、28、29、30、31)
- * @eg `let solarMonthDay = solarDays(1987, 2) // 28`
  */
 export function solarDays(sYear: number, sMonth: number) {
   // 若参数错误，返回-1
@@ -26,7 +25,6 @@ export function solarDays(sYear: number, sMonth: number) {
  * @param sYear solar year(1900-2100)
  * @param n n二十四节气中的第几个节气(1~24)，从n=1(小寒)算起
  * @return day Number
- * @eg `let _24 = getTerm(1987,3) // _24=4, 意即1987年2月4日立春`
  */
 export function getTerm(sYear: number, n: number) {
   if (sYear < 1900 || sYear > 2100 || n < 1 || n > 24) {
@@ -50,7 +48,6 @@ export function getTerm(sYear: number, n: number) {
  * 年份转生肖[!仅能大致转换] => 精确划分生肖分界线是“立春”
  * @param sYear solar year
  * @return Cn string
- * @eg `let animal = getAnimal(1987) // '兔'`
  */
 export function getAnimal(sYear: number) {
   return animals[(sYear - 4) % 12]

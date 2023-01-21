@@ -4,7 +4,6 @@ import { gan, lunarInfo, nStr1, nStr2, nStr3, zhi } from './constant'
  * 返回农历y年一整年的总天数
  * @param lYear lunar Year
  * @return Number
- * @eg `let count = lYearDays(1987) // 387`
  */
 export function lYearDays(lYear: number) {
   let sum = 348
@@ -18,7 +17,6 @@ export function lYearDays(lYear: number) {
  * 返回农历lYear年闰月是哪个月；若lYear年没有闰月，则返回0
  * @param lYear lunar Year
  * @return Number (0-12)
- * @eg `let leapMonth = leapMonth(1987) // 6`
  */
 export function leapMonth(lYear: number) {
   return lunarInfo[lYear - 1900] & 0xf
@@ -28,7 +26,6 @@ export function leapMonth(lYear: number) {
  * 返回农历lYear年闰月的天数 若该年没有闰月则返回0
  * @param lYear lunar Year
  * @return Number (0、29、30)
- * @eg `let leapMonthDay = leapDays(1987) // 29`
  */
 export function leapDays(lYear: number) {
   if (leapMonth(lYear) > 0) {
@@ -42,7 +39,6 @@ export function leapDays(lYear: number) {
  * @param lYear lunar Year
  * @param lMonth lunar Month
  * @return Number (-1、29、30)
- * @eg `let MonthDay = monthDays(1987, 9) // 29`
  */
 export function monthDays(lYear: number, lMonth: number) {
   // 月份参数从1至12，参数错误返回-1
@@ -83,7 +79,6 @@ export function toGanZhi(offset: number) {
  * 传入农历数字月份返回汉语通俗表示法
  * @param lMonth lunar month
  * @return Cn string
- * @eg `let cnMonth = calendar.toChinaMonth(12) // '腊月'`
  */
 export function toChinaMonth(lMonth: number) {
   // 若参数错误，返回-1
@@ -98,23 +93,21 @@ export function toChinaMonth(lMonth: number) {
  * 传入农历日期数字返回汉字表示法
  * @param lDay lunar day
  * @return Cn string
- * @eg `let cnDay = calendar.toChinaDay(21) // '廿一'`
  */
 export function toChinaDay(lDay: number) {
-  let s
+  // 若参数错误，返回-1
+  if (lDay < 1 || lDay > 30) {
+    return -1
+  }
+
   switch (lDay) {
     case 10:
-      s = '\u521d\u5341' // 初十
-      break
+      return '\u521d\u5341' // 初十
     case 20:
-      s = '\u4e8c\u5341' // 二十
-      break
+      return '\u4e8c\u5341' // 二十
     case 30:
-      s = '\u4e09\u5341' // 三十
-      break
+      return '\u4e09\u5341' // 三十
     default:
-      s = nStr2[Math.floor(lDay / 10)]
-      s += nStr1[lDay % 10]
+      return nStr2[Math.floor(lDay / 10)] + nStr1[lDay % 10]
   }
-  return s
 }

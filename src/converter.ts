@@ -12,10 +12,6 @@ import {
 import { getTerm, getAnimal } from './solar'
 
 interface ConvertResult {
-  // festival: festival[festivalDate] ? festival[festivalDate].title : null,
-  // lunarFestival: lFestival[lunarFestivalDate]
-  //   ? lFestival[lunarFestivalDate].title
-  //   : null,
   solarDate: string
   sYear: number
   sMonth: number
@@ -59,7 +55,6 @@ function formatDateString(year: number, month: number, date: number) {
  * @param sMonth solar month
  * @param sDay solar day
  * @return JSON object
- * @eg `console.log(solar2lunar(1987,11,01))`
  */
 export function solar2lunar(): ConvertResult
 export function solar2lunar(
@@ -166,15 +161,15 @@ export function solar2lunar(
     temp = 0
   for (i = 1; i < 13 && offset > 0; i++) {
     // 闰月
-    if (leap > 0 && i === leap + 1 && isLeap === false) {
+    if (leap > 0 && i === leap + 1 && !isLeap) {
       --i
       isLeap = true
       temp = leapDays(lYear) //计算农历闰月天数
     } else {
       temp = monthDays(lYear, i) //计算农历普通月天数
     }
-    //解除闰月
-    if (isLeap === true && i === leap + 1) {
+    // 解除闰月
+    if (isLeap && i === leap + 1) {
       isLeap = false
     }
     offset -= temp
@@ -248,7 +243,7 @@ export function solar2lunar(
   // 农历节日修正：农历12月小月则29号除夕，大月则30号除夕
   // 此处取巧修正：当前为农历12月29号时增加一次判断并且把lunarFestivalDate设置为12-30以正确取得除夕
   // 天朝农历节日遇闰月过前不过后的原则，此处取农历12月天数不考虑闰月
-  // 农历润12月在本工具支持的200年区间内仅1574年出现
+  // 农历润12月在本工具支持的200年区间内未出现，上一次是在1574年出现
   if (lMonth === 12 && lDay === 29 && monthDays(lYear, lMonth) === 29) {
     lunarFestivalDate = '12-30'
   }
@@ -296,7 +291,6 @@ export function solar2lunar(
  * @param lDay lunar day
  * @param isLeapMonth lunar month is leap or not.[如果是农历闰月第四个参数赋值true即可]
  * @return JSON object
- * @eg `console.log(lunar2solar(1987,9,10))`
  */
 export function lunar2solar(
   lYear: number,
@@ -304,58 +298,81 @@ export function lunar2solar(
   lDay: number,
   isLeapMonth: boolean = false
 ) {
-  const leapOffset = 0
-  const _leapMonth = leapMonth(lYear)
-  const leapDay = leapDays(lYear)
-  if (isLeapMonth && _leapMonth !== lMonth) {
-    return -1
-  } //传参要求计算该闰月公历 但该年得出的闰月与传参的月份并不同
+  const leapMonthOfYear = leapMonth(lYear)
+
+  // 传参要求计算该闰月公历，但该年得出的闰月与传参的月份并不同
+  if (isLeapMonth && leapMonthOfYear !== lMonth) {
+    if (leapMonthOfYear > 0) {
+      throw new Error(
+        `The lunar month ${lMonth} of lunar year ${lYear} is not the leap month of the year.` +
+          `The leap month of lunar year ${lYear} is month ${leapMonthOfYear}.`
+      )
+    } else {
+      throw new Error(
+        `The lunar month ${lMonth} of lunar year ${lYear} is not the leap month of the year.` +
+          `There is no leap month in lunar year ${lYear}.`
+      )
+    }
+  }
+
+  // 超出了最大极限值
   if (
     (lYear === 2100 && lMonth === 12 && lDay > 1) ||
     (lYear === 1900 && lMonth === 1 && lDay < 31)
   ) {
-    return -1
-  } //超出了最大极限值
-  const day = monthDays(lYear, lMonth)
-  let _day = day
-  //bugFix 2016-9-25
-  //if month is leap, _day use leapDays method
-  if (isLeapMonth) {
-    _day = leapDays(lYear)
+    throw new Error(
+      `The lunar date to be converted ${formatDateString(
+        lYear,
+        lMonth,
+        lDay
+      )} is out of range, [1900.01.31~2100.12.01] only.`
+    )
   }
-  if (lYear < 1900 || lYear > 2100 || lDay > _day) {
-    return -1
-  } //参数合法性效验
 
-  //计算农历的时间差
+  if (lYear < 1900 || lYear > 2100) {
+    throw new Error(
+      `The lunar date to be converted ${formatDateString(
+        lYear,
+        lMonth,
+        lDay
+      )} is out of range, [1900.01.31~2100.12.01] only.`
+    )
+  }
+
+  // 输入日期超过当月日期
+  const dayInMonth = isLeapMonth ? leapDays(lYear) : monthDays(lYear, lMonth)
+  if (lDay > dayInMonth) {
+    throw new Error(
+      `The lunar date ${lDay} is invalid, the lunar month ${lMonth} only has ${dayInMonth} days.`
+    )
+  }
+
+  // 计算农历的时间差
   let offset = 0
-  let i
-  for (i = 1900; i < lYear; i++) {
+  for (let i = 1900; i < lYear; i++) {
     offset += lYearDays(i)
   }
-  let leap = 0,
-    isAdd = false
-  for (i = 1; i < lMonth; i++) {
-    leap = leapMonth(lYear)
-    if (!isAdd) {
-      //处理闰月
-      if (leap <= i && leap > 0) {
-        offset += leapDays(lYear)
-        isAdd = true
-      }
+
+  const leap = leapMonth(lYear)
+  for (let i = 1; i < lMonth; i++) {
+    // 处理闰月
+    if (leap === i) {
+      offset += leapDays(lYear)
     }
     offset += monthDays(lYear, i)
   }
-  //转换闰月农历 需补充该年闰月的前一个月的时差
+  // 转换闰月农历，需补充该年闰月的前一个月的时差
   if (isLeapMonth) {
-    offset += day
+    offset += monthDays(lYear, lMonth)
   }
-  //1900年农历正月一日的公历时间为1900年1月30日0时0分0秒(该时间也是本农历的最开始起始点)
-  const strap = Date.UTC(1900, 1, 30, 0, 0, 0)
-  const calObj = new Date((offset + lDay - 31) * 86400000 + strap)
-  const cY = calObj.getUTCFullYear()
-  const cM = calObj.getUTCMonth() + 1
-  const cD = calObj.getUTCDate()
+  offset += lDay
 
-  return solar2lunar(cY, cM, cD)
+  // 1900年农历正月一日的公历时间为1900年1月30日0时0分0秒(该时间也是本农历的最开始起始点)
+  const start = Date.UTC(1900, 0, 30)
+  const solarDate = new Date(offset * 86400000 + start)
+  const sYear = solarDate.getUTCFullYear()
+  const sMonth = solarDate.getUTCMonth() + 1
+  const sDay = solarDate.getUTCDate()
+
+  return solar2lunar(sYear, sMonth, sDay)
 }

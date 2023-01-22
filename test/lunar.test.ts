@@ -16,7 +16,6 @@ function dayDiff(start: string, end: string) {
 
 test('calculate the total days in a lunar years', () => {
   expect(lYearDays(1987)).eq(dayDiff('1987-01-29', '1988-02-17')) // 384
-
   expect(lYearDays(2022)).eq(dayDiff('2022-02-01', '2023-01-22'))
 })
 
@@ -52,21 +51,23 @@ test('get the ganzhi calculated by offset', () => {
 })
 
 test('get the Chinese name of a lunar month', () => {
-  expect(toChinaMonth(0)).eq(-1)
   expect(toChinaMonth(1)).eq('正月')
   expect(toChinaMonth(10)).eq('十月')
   expect(toChinaMonth(11)).eq('冬月')
   expect(toChinaMonth(12)).eq('腊月')
-  expect(toChinaMonth(13)).eq(-1)
+
+  expect(() => toChinaMonth(0)).toThrowError()
+  expect(() => toChinaMonth(13)).toThrowError()
 })
 
 test('get the Chinese name of a lunar day', () => {
-  expect(toChinaDay(0)).eq(-1)
   expect(toChinaDay(1)).eq('初一')
   expect(toChinaDay(10)).eq('初十')
   expect(toChinaDay(11)).eq('十一')
   expect(toChinaDay(20)).eq('二十')
   expect(toChinaDay(21)).eq('廿一')
   expect(toChinaDay(30)).eq('三十')
-  expect(toChinaDay(31)).eq(-1)
+
+  expect(() => toChinaDay(0)).toThrowError()
+  expect(() => toChinaDay(31)).toThrowError()
 })

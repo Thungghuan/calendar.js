@@ -9,7 +9,9 @@ import { animals, solarMonth, sTermInfo } from './constant'
 export function solarDays(sYear: number, sMonth: number) {
   // 若参数错误，返回-1
   if (sMonth > 12 || sMonth < 1) {
-    return -1
+    throw new Error(
+      `The solar month ${sMonth} is out of range, expeted [1-12].`
+    )
   }
 
   if (sMonth === 2) {
@@ -27,9 +29,15 @@ export function solarDays(sYear: number, sMonth: number) {
  * @return day Number
  */
 export function getTerm(sYear: number, n: number) {
-  if (sYear < 1900 || sYear > 2100 || n < 1 || n > 24) {
-    return -1
+  if (sYear < 1900 || sYear > 2100) {
+    throw new Error(
+      `The solar year ${sYear} is out of range, expected [1900-2100].`
+    )
   }
+  if (n < 1 || n > 24) {
+    throw new Error(`The index of term ${n} is out of range, expected [1-24].`)
+  }
+
   const _table = sTermInfo[sYear - 1900]
   const _calcDay = []
   for (let index = 0; index < _table.length; index += 5) {

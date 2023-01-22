@@ -2,8 +2,8 @@ import { expect, test } from 'vitest'
 import { getAnimal, getTerm, solarDays } from '../src/solar'
 
 test('invalid solar month', () => {
-  expect(solarDays(2023, -1)).eq(-1)
-  expect(solarDays(2023, 13)).eq(-1)
+  expect(() => solarDays(2023, -1)).toThrowError()
+  expect(() => solarDays(2023, 13)).toThrowError()
 })
 
 test('days in a solar month of a solar year', () => {
@@ -17,13 +17,13 @@ test('days in a solar month of a solar year', () => {
 })
 
 test('solar year that out of range', () => {
-  expect(getTerm(1899, 1)).eq(-1)
-  expect(getTerm(2101, 1)).eq(-1)
+  expect(() => getTerm(1899, 1)).toThrowError()
+  expect(() => getTerm(2101, 1)).toThrowError()
 })
 
 test('index of term out of range', () => {
-  expect(getTerm(2023, 0)).eq(-1)
-  expect(getTerm(2023, 25)).eq(-1)
+  expect(() => getTerm(2023, 0)).toThrowError()
+  expect(() => getTerm(2023, 25)).toThrowError()
 })
 
 test('nth term in a solar year', () => {

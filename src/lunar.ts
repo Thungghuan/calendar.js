@@ -43,7 +43,9 @@ export function leapDays(lYear: number) {
 export function monthDays(lYear: number, lMonth: number) {
   // 月份参数从1至12，参数错误返回-1
   if (lMonth > 12 || lMonth < 1) {
-    return -1
+    throw new Error(
+      `The lunar month ${lMonth} is out of range, expeted [1-12].`
+    )
   }
   return lunarInfo[lYear - 1900] & (0x10000 >> lMonth) ? 30 : 29
 }
@@ -83,7 +85,9 @@ export function toGanZhi(offset: number) {
 export function toChinaMonth(lMonth: number) {
   // 若参数错误，返回-1
   if (lMonth > 12 || lMonth < 1) {
-    return -1
+    throw new Error(
+      `The lunar month ${lMonth} is out of range, expeted [1-12].`
+    )
   }
 
   return nStr3[lMonth - 1] + '\u6708' //加上月字
@@ -97,7 +101,9 @@ export function toChinaMonth(lMonth: number) {
 export function toChinaDay(lDay: number) {
   // 若参数错误，返回空串
   if (lDay < 1 || lDay > 30) {
-    return -1
+    throw new Error(
+      `The lunar day ${lDay} is out of range, expeted [1-30].`
+    )
   }
 
   switch (lDay) {

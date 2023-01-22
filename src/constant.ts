@@ -257,6 +257,23 @@ const nStr3 = [
   '\u814a'  // '腊'
 ]
 
+
+const astro = [
+  '\u6469\u7faf', // 摩羯",
+  '\u6c34\u74f6', // 水瓶",
+  '\u53cc\u9c7c', // 双鱼",
+  '\u767d\u7f8a', // 白羊",
+  '\u91d1\u725b', // 金牛",
+  '\u53cc\u5b50', // 双子",
+  '\u5de8\u87f9', // 巨蟹",
+  '\u72ee\u5b50', // 狮子",
+  '\u5904\u5973', // 处女",
+  '\u5929\u79e4', // 天秤",
+  '\u5929\u874e', // 天蝎",
+  '\u5c04\u624b', // 射手",
+  '\u6469\u7faf'  // 摩羯",
+]
+
 export {
   lunarInfo,
   solarMonth,
@@ -267,5 +284,6 @@ export {
   sTermInfo,
   nStr1,
   nStr2,
-  nStr3
+  nStr3,
+  astro
 }

@@ -1,3 +1,4 @@
+import { toAstro } from './astro'
 import { nStr1, solarTerm } from './constant'
 import {
   lYearDays,
@@ -38,7 +39,8 @@ interface ConvertResult {
 
   isTerm: boolean
   term: string | null
-  // astro: astro
+
+  astro: string
 }
 
 function formatDateString(year: number, month: number, date: number) {
@@ -228,7 +230,7 @@ export function solar2lunar(
   const gzDay = toGanZhi(dayCyclical + sDay - 1)
 
   // 该日期所属的星座
-  // const astro = toAstro(m, d)
+  const astro = toAstro(sMonth, sDay)
 
   const solarDate = formatDateString(sYear, sMonth, sDay)
   const lunarDate = formatDateString(lYear, lMonth, lDay)
@@ -278,8 +280,9 @@ export function solar2lunar(
     isLeap,
 
     isTerm,
-    term
-    // astro: astro
+    term,
+
+    astro
   }
 }
 

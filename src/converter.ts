@@ -1,5 +1,6 @@
 import { toAstro } from './astro'
 import { nStr1, solarTerm } from './constant'
+import { getLunarFestival, getSolarFestival } from './festival'
 import {
   lYearDays,
   leapMonth,
@@ -41,6 +42,9 @@ interface ConvertResult {
   term: string | null
 
   astro: string
+
+  sFestival: string | string[]
+  lFestival: string | string[]
 }
 
 function formatDateString(year: number, month: number, date: number) {
@@ -235,26 +239,20 @@ export function solar2lunar(
   const solarDate = formatDateString(sYear, sMonth, sDay)
   const lunarDate = formatDateString(lYear, lMonth, lDay)
 
-  // const festival = festival
-  // const lFestival = lFestival
-
-  const festivalDate = sMonth + '-' + sDay
-  let lunarFestivalDate = lMonth + '-' + lDay
-
   // bugfix https://github.com/jjonline/calendar.js/issues/29
   // 农历节日修正：农历12月小月则29号除夕，大月则30号除夕
   // 此处取巧修正：当前为农历12月29号时增加一次判断并且把lunarFestivalDate设置为12-30以正确取得除夕
   // 天朝农历节日遇闰月过前不过后的原则，此处取农历12月天数不考虑闰月
   // 农历闰12月在本工具支持的200年区间内未出现，上一次是在1574年出现
+  let lFestivalDay = lDay
   if (lMonth === 12 && lDay === 29 && monthDays(lYear, lMonth) === 29) {
-    lunarFestivalDate = '12-30'
+    lFestivalDay = 30
   }
 
+  const sFestival = getSolarFestival(sMonth, sDay)
+  const lFestival = getLunarFestival(lMonth, lFestivalDay)
+
   return {
-    // festival: festival[festivalDate] ? festival[festivalDate].title : null,
-    // lunarFestival: lFestival[lunarFestivalDate]
-    //   ? lFestival[lunarFestivalDate].title
-    //   : null,
     solarDate,
     sYear,
     sMonth,
@@ -282,7 +280,10 @@ export function solar2lunar(
     isTerm,
     term,
 
-    astro
+    astro,
+
+    sFestival,
+    lFestival
   }
 }
 

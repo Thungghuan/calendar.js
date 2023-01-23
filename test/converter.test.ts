@@ -81,6 +81,36 @@ describe('test other properties of the convert result', () => {
     expect(termDayResult.isTerm).true
     expect(termDayResult.term).eq('夏至')
   })
+
+  const astroDay = new Date('2023-01-23')
+  const astroDayResult = solar2lunar(
+    astroDay.getFullYear(),
+    astroDay.getMonth() + 1,
+    astroDay.getDate()
+  )
+  test('get astro of date', () => {
+    expect(astroDayResult.astro).eq('水瓶座')
+  })
+
+  const sFestivalDate = new Date('2023-05-01')
+  const sFestivalDateReulst = solar2lunar(
+    sFestivalDate.getFullYear(),
+    sFestivalDate.getMonth() + 1,
+    sFestivalDate.getDate()
+  )
+  test('get basic solar festival of date', () => {
+    expect(sFestivalDateReulst.sFestival).eq('劳动节')
+  })
+
+  const lFestivalDate = new Date('2023-01-21')
+  const lFestivalDateReulst = solar2lunar(
+    lFestivalDate.getFullYear(),
+    lFestivalDate.getMonth() + 1,
+    lFestivalDate.getDate()
+  )
+  test('get basic lunar festival of date', () => {
+    expect(lFestivalDateReulst.lFestival).eq('除夕')
+  })
 })
 
 describe('test lunar2solar convert result', () => {

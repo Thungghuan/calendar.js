@@ -24,5 +24,5 @@ export function toAstro(sMonth: number, sDay: number) {
 
   const arr = [20, 19, 21, 21, 21, 22, 23, 23, 23, 23, 22, 22]
 
-  return astro[sMonth - (sDay < arr[sMonth - 1] ? 1 : 0)] + '\u5ea7' //座
+  return astro[sMonth - (sDay < arr[sMonth - 1] ? 1 : 0)] + '\u5ea7' // 座
 }
